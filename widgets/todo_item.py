@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QCheckBox, QSizePolicy, QGraphicsDropShadowEffect, QWidget,
     QGraphicsOpacityEffect
 )
-from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QAbstractAnimation, QPoint
+from PyQt5.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QAbstractAnimation
 from PyQt5.QtGui import QFont, QColor
 
 from widgets.animations import ShadowAnimator, animate_shadow
@@ -148,41 +148,27 @@ class TodoItemWidget(QFrame):
     # --- fade-in entrance animation ---
 
     def play_entrance(self, delay_ms: int = 0) -> None:
-        """Animate card appearing with opacity + slide up."""
-        opacity_fx = QGraphicsOpacityEffect(self)
-        opacity_fx.setOpacity(0.0)
-        self.setGraphicsEffect(opacity_fx)
-
-        # Opacity anim
-        self._entrance_opacity = QPropertyAnimation(opacity_fx, b"opacity", self)
-        self._entrance_opacity.setDuration(380)
-        self._entrance_opacity.setStartValue(0.0)
-        self._entrance_opacity.setEndValue(1.0)
-        self._entrance_opacity.setEasingCurve(QEasingCurve.OutCubic)
-
-        # Slide anim
-        start = self.pos()
-        self._entrance_slide = QPropertyAnimation(self, b"pos", self)
-        self._entrance_slide.setDuration(380)
-        self._entrance_slide.setStartValue(QPoint(start.x(), start.y() + 20))
-        self._entrance_slide.setEndValue(start)
-        self._entrance_slide.setEasingCurve(QEasingCurve.OutCubic)
-
-        # Restore shadow after entrance finished
-        def _restore_shadow():
-            glow_color = PRIORITY_GLOW.get(self.todo.get("priority", "Medium"), QColor(0, 0, 0, 35))
-            self._shadow = QGraphicsDropShadowEffect(self)
-            self._shadow.setBlurRadius(16)
-            self._shadow.setOffset(0, 3)
-            self._shadow.setColor(glow_color)
-            self.setGraphicsEffect(self._shadow)
-            self._shadow_anim = ShadowAnimator(self._shadow, self)
-
-        self._entrance_opacity.finished.connect(_restore_shadow)
-
+        """Simple opacity fade-in that doesn't interfere with layout or shadow."""
+        # Temporarily hide, then fade via stylesheet opacity trick
         from PyQt5.QtCore import QTimer
-        QTimer.singleShot(delay_ms, self._entrance_opacity.start)
-        QTimer.singleShot(delay_ms, self._entrance_slide.start)
+
+        self.setWindowOpacity(0) if hasattr(self, 'setWindowOpacity') else None
+        # Use a simple max-height animation for a subtle reveal
+        self._entrance_anim = QPropertyAnimation(self, b"maximumHeight", self)
+        self._entrance_anim.setDuration(350)
+        self._entrance_anim.setStartValue(0)
+        self._entrance_anim.setEndValue(200)
+        self._entrance_anim.setEasingCurve(QEasingCurve.OutCubic)
+
+        def _start():
+            self.setMaximumHeight(0)
+            self._entrance_anim.start()
+
+        def _finish():
+            self.setMaximumHeight(16777215)  # QWIDGETSIZE_MAX
+
+        self._entrance_anim.finished.connect(_finish)
+        QTimer.singleShot(delay_ms, _start)
 
     def _on_toggle(self, state: int) -> None:
         self.toggled.emit(self.todo["id"], state == Qt.Checked)

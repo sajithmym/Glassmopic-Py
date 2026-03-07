@@ -251,33 +251,36 @@ class TodoPanel(QWidget):
 
     def _build_ui(self) -> None:
         root = QVBoxLayout(self)
-        root.setContentsMargins(16, 8, 16, 16)
+        root.setContentsMargins(16, 10, 16, 16)
         root.setSpacing(10)
 
-        # --- Toolbar: search + filters + add ---
-        toolbar = QHBoxLayout()
-        toolbar.setSpacing(8)
-
+        # --- Row 1: Search bar (full width) ---
         self._search = QLineEdit()
         self._search.setObjectName("SearchBox")
         self._search.setPlaceholderText("🔍  Search todos…")
-        self._search.setMinimumHeight(40)
+        self._search.setMinimumHeight(42)
         self._search.textChanged.connect(self.refresh)
-        toolbar.addWidget(self._search, stretch=2)
+        root.addWidget(self._search)
+
+        # --- Row 2: Filters + Add button ---
+        toolbar = QHBoxLayout()
+        toolbar.setSpacing(8)
 
         self._filter_status = QComboBox()
         self._filter_status.setObjectName("FilterCombo")
         self._filter_status.addItems(["All", "Active", "Completed"])
         self._filter_status.setMinimumHeight(40)
         self._filter_status.currentTextChanged.connect(self.refresh)
-        toolbar.addWidget(self._filter_status)
+        toolbar.addWidget(self._filter_status, stretch=1)
 
         self._filter_priority = QComboBox()
         self._filter_priority.setObjectName("FilterCombo")
         self._filter_priority.addItems(["All", "Low", "Medium", "High", "Critical"])
         self._filter_priority.setMinimumHeight(40)
         self._filter_priority.currentTextChanged.connect(self.refresh)
-        toolbar.addWidget(self._filter_priority)
+        toolbar.addWidget(self._filter_priority, stretch=1)
+
+        toolbar.addStretch()
 
         add_btn = QPushButton("＋  New Todo")
         add_btn.setObjectName("AddBtn")

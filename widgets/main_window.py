@@ -18,8 +18,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Glassmopic Todo")
-        self.setMinimumSize(520, 640)
-        self.resize(600, 780)
+        self.setMinimumSize(480, 600)
+        self.resize(620, 800)
 
         # Frameless + translucent
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowMinMaxButtonsHint)
