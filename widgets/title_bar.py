@@ -1,9 +1,13 @@
-"""Custom frameless title bar for Glassmopic."""
+"""Custom frameless title bar for Glassmopic with glow effects."""
 
 from PyQt5.QtWidgets import (
-    QWidget, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QGraphicsDropShadowEffect
+    QWidget, QHBoxLayout, QLabel, QPushButton, QSizePolicy,
+    QGraphicsDropShadowEffect
 )
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal
+from PyQt5.QtCore import (
+    Qt, QPoint, pyqtSignal, QPropertyAnimation, QEasingCurve,
+    QAbstractAnimation, QSequentialAnimationGroup, QTimer
+)
 from PyQt5.QtGui import QFont, QColor, QMouseEvent
 
 
@@ -17,24 +21,29 @@ class TitleBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("TitleBar")
-        self.setFixedHeight(48)
+        self.setFixedHeight(52)
         self._drag_pos: QPoint | None = None
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 0, 8, 0)
-        layout.setSpacing(8)
+        layout.setContentsMargins(18, 0, 10, 0)
+        layout.setSpacing(10)
 
-        # App icon / logo dot
-        logo = QLabel("●")
-        logo.setObjectName("TitleLogo")
-        logo.setFont(QFont("Segoe UI", 14))
-        logo.setStyleSheet("color: #6C63FF;")
-        layout.addWidget(logo)
+        # App icon / logo dot with glow
+        self._logo = QLabel("●")
+        self._logo.setObjectName("TitleLogo")
+        self._logo.setFont(QFont("Segoe UI", 16))
+        self._logo.setStyleSheet("color: #6C63FF; background: transparent;")
+        logo_glow = QGraphicsDropShadowEffect(self._logo)
+        logo_glow.setBlurRadius(20)
+        logo_glow.setOffset(0, 0)
+        logo_glow.setColor(QColor(108, 99, 255, 120))
+        self._logo.setGraphicsEffect(logo_glow)
+        layout.addWidget(self._logo)
 
         # Title label
         self._title_label = QLabel("Glassmopic Todo")
         self._title_label.setObjectName("TitleLabel")
-        self._title_label.setFont(QFont("Segoe UI Semibold", 11))
+        self._title_label.setFont(QFont("Segoe UI", 12, QFont.DemiBold))
         layout.addWidget(self._title_label)
 
         layout.addStretch()

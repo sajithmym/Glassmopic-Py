@@ -3,8 +3,8 @@
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QGraphicsDropShadowEffect, QApplication
 )
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QColor, QPainter, QBrush, QPen, QPainterPath, QRegion
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QAbstractAnimation, pyqtProperty
+from PyQt5.QtGui import QColor, QPainter, QBrush, QPen, QPainterPath, QLinearGradient, QRadialGradient
 
 from widgets.title_bar import TitleBar
 from widgets.todo_panel import TodoPanel
@@ -63,12 +63,33 @@ class MainWindow(QMainWindow):
 
         path = QPainterPath()
         r = self.BORDER_RADIUS if not self._is_maximized else 0
-        path.addRoundedRect(0, 0, self.width(), self.height(), r, r)
+        w, h = self.width(), self.height()
+        path.addRoundedRect(0, 0, w, h, r, r)
 
-        # Glass background
-        painter.setPen(QPen(QColor(108, 99, 255, 60), 1.5))
-        painter.setBrush(QBrush(QColor(24, 24, 37, 240)))
+        # Deep gradient background
+        bg = QLinearGradient(0, 0, w * 0.3, h)
+        bg.setColorAt(0.0, QColor(18, 18, 32, 248))
+        bg.setColorAt(0.35, QColor(14, 14, 26, 252))
+        bg.setColorAt(0.7, QColor(18, 18, 30, 250))
+        bg.setColorAt(1.0, QColor(12, 12, 24, 252))
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(bg))
         painter.drawPath(path)
+
+        # Subtle accent glow at top-center
+        glow = QRadialGradient(w * 0.5, 0, w * 0.5)
+        glow.setColorAt(0.0, QColor(108, 99, 255, 18))
+        glow.setColorAt(0.5, QColor(108, 99, 255, 6))
+        glow.setColorAt(1.0, QColor(108, 99, 255, 0))
+        painter.setBrush(QBrush(glow))
+        painter.drawPath(path)
+
+        # Border glow
+        border_pen = QPen(QColor(108, 99, 255, 45), 1.2)
+        painter.setPen(border_pen)
+        painter.setBrush(Qt.NoBrush)
+        painter.drawPath(path)
+
         painter.end()
 
     # --- maximize toggle ---
